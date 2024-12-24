@@ -36,4 +36,18 @@ foodRouter.post("/food-details", async (req, res) => {
   }
 });
 
+foodRouter.post("/manage-myfoods", async (req, res) => {
+  const { email } = req.body;
+  const query = {
+    userEmail: email,
+  };
+  try {
+    const foods = foodCollection.find(query);
+    const result = await foods.toArray();
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ message: "Something went wrong on server side" });
+  }
+});
+
 export default foodRouter;
