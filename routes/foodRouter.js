@@ -8,10 +8,24 @@ import { ObjectId } from "mongodb";
 const foodRouter = express.Router();
 
 foodRouter.get("/available-foods", async (req, res) => {
+  const query = { status: "Available" };
   try {
-    const foods = foodCollection.find();
+    const foods = foodCollection.find(query);
     const result = await foods.toArray();
     res.send(result);
+  } catch (error) {
+    res.status(500).send({ message: "Something went wrong on server side" });
+  }
+});
+
+foodRouter.get("/featured-foods", async (req, res) => {
+  try {
+    const foods = await foodCollection
+      .find()
+      .sort({ exDate: -1 })
+      .limit(6)
+      .toArray();
+    res.send(foods);
   } catch (error) {
     res.status(500).send({ message: "Something went wrong on server side" });
   }
