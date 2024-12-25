@@ -50,7 +50,7 @@ foodRouter.post("/manage-myfoods", async (req, res) => {
   }
 });
 // thik kora baki
-foodRouter.put("/update-food", async (req, res) => {
+foodRouter.put("/update-food/:id", async (req, res) => {
   const { id } = req.params;
   const updateData = req.body;
   const { foodImg, foodName, quantity, location, exDate, note } = updateData;
