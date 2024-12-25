@@ -49,5 +49,41 @@ foodRouter.post("/manage-myfoods", async (req, res) => {
     res.status(500).send({ message: "Something went wrong on server side" });
   }
 });
+// thik kora baki
+foodRouter.put("/update-food", async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+  const { foodImg, foodName, quantity, location, exDate, note } = updateData;
+  const filter = { _id: new ObjectId(id) };
+
+  try {
+    const options = { upsert: true };
+    const updateDoc = {
+      $set: {
+        foodImg,
+        foodName,
+        quantity,
+        location,
+        exDate,
+        note,
+      },
+    };
+    const result = await foodCollection.updateOne(filter, updateDoc, options);
+    res.send(result);
+  } catch (err) {
+    res.status(501).send({ message: "Server Side Error" });
+  }
+});
+
+foodRouter.delete("/available-foods/:id", async (req, res) => {
+  const { id } = req.params;
+  const query = { _id: new ObjectId(id) };
+  try {
+    const result = await foodCollection.deleteOne(query);
+    res.send(result);
+  } catch (err) {
+    res.status(501).send({ message: "Server Side Error" });
+  }
+});
 
 export default foodRouter;
