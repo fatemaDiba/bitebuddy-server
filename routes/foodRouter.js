@@ -127,4 +127,18 @@ foodRouter.post("/request-food/:id", async (req, res) => {
   }
 });
 
+foodRouter.post("/requested-foods", async (req, res) => {
+  const { email } = req.body;
+  const query = {
+    user: email,
+  };
+  try {
+    const foods = requestedCollection.find(query);
+    const result = await foods.toArray();
+    res.send(result);
+  } catch (err) {
+    res.status(501).send({ message: "Server Side Error" });
+  }
+});
+
 export default foodRouter;
