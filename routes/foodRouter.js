@@ -1,5 +1,8 @@
 import express from "express";
-import { foodCollection } from "../config/dbCollections.js";
+import {
+  foodCollection,
+  requestedCollection,
+} from "../config/dbCollections.js";
 import { ObjectId } from "mongodb";
 
 const foodRouter = express.Router();
@@ -16,8 +19,12 @@ foodRouter.get("/available-foods", async (req, res) => {
 
 foodRouter.post("/add-food", async (req, res) => {
   const data = req.body;
+
   try {
-    const result = await foodCollection.insertOne(data);
+    const result = await foodCollection.insertOne({
+      ...data,
+      status: "Available",
+    });
     res.send(result);
   } catch (error) {
     res.status(500).send({ message: "Something went wrong on server side" });
@@ -49,7 +56,7 @@ foodRouter.post("/manage-myfoods", async (req, res) => {
     res.status(500).send({ message: "Something went wrong on server side" });
   }
 });
-// thik kora baki
+
 foodRouter.put("/update-food/:id", async (req, res) => {
   const { id } = req.params;
   const updateData = req.body;
@@ -81,6 +88,40 @@ foodRouter.delete("/available-foods/:id", async (req, res) => {
   try {
     const result = await foodCollection.deleteOne(query);
     res.send(result);
+  } catch (err) {
+    res.status(501).send({ message: "Server Side Error" });
+  }
+});
+
+foodRouter.post("/request-food/:id", async (req, res) => {
+  const { id } = req.params;
+  const requestedData = req.body;
+
+  try {
+    const result = await requestedCollection.insertOne(requestedData);
+    if (result.acknowledged) {
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status: "Requested",
+        },
+      };
+      const updatedData = await foodCollection.updateOne(
+        query,
+        updateDoc,
+        options
+      );
+      if (updatedData.modifiedCount > 0) {
+        return res.send({ message: "Successfully updated status" });
+      } else {
+        return res.send({
+          message: "Failed to update status.",
+        });
+      }
+    } else {
+      return res.send({ message: "Failed to request food" });
+    }
   } catch (err) {
     res.status(501).send({ message: "Server Side Error" });
   }
