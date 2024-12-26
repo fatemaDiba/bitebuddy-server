@@ -13,11 +13,11 @@ const client = new MongoClient(uri, {
 
 async function connectDB() {
   try {
-    await client.connect();
-    await client.db("Food-Share").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.connect();
+    // await client.db("Food-Share").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
     return client.db("Food-Share");
   } catch (error) {
     console.log("error", error);

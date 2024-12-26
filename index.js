@@ -11,7 +11,7 @@ const port = process.env.PORT || 3001;
 
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173", "https://bitebuddy-by-fatema.surge.sh"],
     credentials: true,
   })
 );
