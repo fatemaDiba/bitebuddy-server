@@ -1,4 +1,5 @@
 import express from "express";
+import jwt from "jsonwebtoken";
 import {
   foodCollection,
   requestedCollection,
@@ -7,12 +8,28 @@ import { ObjectId } from "mongodb";
 
 const foodRouter = express.Router();
 
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token;
+
+  if (!token) {
+    return res.status(401).send({ message: "Unauthorized Access" });
+  }
+  jwt.verify(token, process.env.JWT_ACCESS_TOKEN, (err, decode) => {
+    if (err) {
+      return res.status(401).send({ message: "Unauthorized Access" });
+    }
+    next();
+  });
+};
+
 foodRouter.get("/available-foods", async (req, res) => {
   const query = { status: "Available" };
   try {
-    const foods = foodCollection.find(query);
-    const result = await foods.toArray();
-    res.send(result);
+    const foods = await foodCollection
+      .find(query)
+      .sort({ exDate: -1 })
+      .toArray();
+    res.send(foods);
   } catch (error) {
     res.status(500).send({ message: "Something went wrong on server side" });
   }
@@ -22,7 +39,7 @@ foodRouter.get("/featured-foods", async (req, res) => {
   try {
     const foods = await foodCollection
       .find()
-      .sort({ exDate: -1 })
+      .sort({ quantity: -1 })
       .limit(6)
       .toArray();
     res.send(foods);
@@ -57,7 +74,7 @@ foodRouter.post("/food-details", async (req, res) => {
   }
 });
 
-foodRouter.post("/manage-myfoods", async (req, res) => {
+foodRouter.post("/manage-myfoods", verifyToken, async (req, res) => {
   const { email } = req.body;
   const query = {
     userEmail: email,
@@ -141,7 +158,7 @@ foodRouter.post("/request-food/:id", async (req, res) => {
   }
 });
 
-foodRouter.post("/requested-foods", async (req, res) => {
+foodRouter.post("/requested-foods", verifyToken, async (req, res) => {
   const { email } = req.body;
   const query = {
     user: email,
