@@ -25,14 +25,25 @@ const verifyToken = (req, res, next) => {
 foodRouter.get("/available-foods", async (req, res) => {
   const query = { status: "Available" };
   try {
-    const foods = await foodCollection
-      .find(query)
-      .sort({ exDate: -1 })
-      .toArray();
+    const foods = await foodCollection.find(query).toArray();
     res.send(foods);
   } catch (error) {
     res.status(500).send({ message: "Something went wrong on server side" });
   }
+});
+
+foodRouter.post("/sort-by-quantity", async (req, res) => {
+  const { sortValue } = req.body;
+  const query = { status: "Available" };
+  if (!sortValue) {
+    const foods = await foodCollection.find(query).toArray();
+    return res.send(foods);
+  }
+  const sortedFood = await foodCollection
+    .find(query)
+    .sort({ quantity: sortValue })
+    .toArray();
+  res.send(sortedFood);
 });
 
 foodRouter.get("/featured-foods", async (req, res) => {
@@ -40,7 +51,7 @@ foodRouter.get("/featured-foods", async (req, res) => {
     const foods = await foodCollection
       .find()
       .sort({ quantity: -1 })
-      .limit(6)
+      .limit(4)
       .toArray();
     res.send(foods);
   } catch (error) {
